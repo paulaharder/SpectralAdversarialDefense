@@ -1,6 +1,5 @@
 # SpectralAdversarialDefense
 
-This 
 
 ## How to run the code
 
