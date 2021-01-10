@@ -7,4 +7,8 @@ InputMFS_Notebook.ipynb
 testing_stuff.ipynb
 data/sample_mean.py
 data/detectors
+data/clean_data_cif
+data/precision.npy
+detect_adversarials.py
+models/__pycache__/vgg.cpython-38.pyc
 .ipynb_checkpoints/
