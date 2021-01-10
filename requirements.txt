@@ -1,0 +1,5 @@
+pytorch torchvision cudatoolkit=10.1 -c pytorch
+foolbox==3.2.1
+tqdm==4.55.1
+numpy==1.19.2
+scikit-learn==0.23.2 
