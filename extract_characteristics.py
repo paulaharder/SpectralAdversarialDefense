@@ -18,15 +18,17 @@ import sklearn.covariance
 parser = argparse.ArgumentParser()
 parser.add_argument("--attack", default='fgsm', help="the attack method which created the adversarial examples you want to use. Either fgsm, bim, pgd, df or cw")
 parser.add_argument("--detector", default='InputMFS', help="the detector youz want to use, out of InputMFS, InputPFS, LayerMFS, LayerPFS, LID, Mahalanobis")
+parser.add_argument("--net", default='cif10', help="the network used for the attack, either cif10 or cif100")
 args = parser.parse_args()
 #choose attack
 attack_method = args.attack
 detector = args.detector
+net = args.net
 
 #load adversarials and their non-adversarial counterpart
 print('Loading images and adversarial examples...')
-images = torch.load('./data/adversarials/images_'+attack_method)
-images_advs = torch.load('./data/adversarials/images_adv_'+attack_method)
+images = torch.load('./data/adversarials/'+net+'_images_'+attack_method)
+images_advs = torch.load('./data/adversarials/'+net+'_images_adv_'+attack_method)
 number_images = len(images)
 
 #load model vgg16
@@ -357,6 +359,6 @@ else:
     print('unknown detector')
 
 ###saving characteristics
-np.save('./data/characteristics/'+attack_method+'_'+detector,characteristics)
-np.save('./data/characteristics/'+attack_method+'_'+detector+'_adv',characteristics_adv)
+np.save('./data/characteristics/'+net+'_'+attack_method+'_'+detector,characteristics)
+np.save('./data/characteristics/'+net+'_'+attack_method+'_'+detector+'_adv',characteristics_adv)
 print('Done extracting and saving characteristics!')
