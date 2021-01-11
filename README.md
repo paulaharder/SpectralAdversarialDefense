@@ -35,11 +35,11 @@ $ python detect_adversarials.py --attack fgsm --detector InputMFS
 
 ## Other repositories used
 For training the VGG-16 on CIFAR-10 we used:
-https://github.com/kuangliu/pytorch-cifar
+https://github.com/kuangliu/pytorch-cifar.
 For generating the adversarial examples we used the toolbox foolbox:
-https://github.com/bethgelab/foolbox
+https://github.com/bethgelab/foolbox.
 For the LID detector we used:
-https://github.com/xingjunm/lid_adversarial_subspace_detection
+https://github.com/xingjunm/lid_adversarial_subspace_detection.
 For the Mahalanobis detector we used:
-https://github.com/pokaxpoka/deep_Mahalanobis_detector
+https://github.com/pokaxpoka/deep_Mahalanobis_detector.
 
