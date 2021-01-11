@@ -16,7 +16,7 @@ First download the CIFAR-10 dataset and extract the CIFAR10 images, which are co
 $ python generate_clean_data.py
 ```
 
-Then generate the adversarial examples, argument can be fgsm (Fast Gradient Sign Method), bim (Basic Iterative Method), pgd (Projected Gradient DEscent), df (Deepfool), cw (Carlini and Wagner), :
+Then generate the adversarial examples, argument can be fgsm (Fast Gradient Sign Method), bim (Basic Iterative Method), pgd (Projected Gradient Descent), df (Deepfool), cw (Carlini and Wagner), :
 ```sh
 $ python attack.py --attack fgsm
 ```
@@ -32,3 +32,14 @@ Then train a LR classifier on the characteristics for a specific attack and char
 ```sh
 $ python detect_adversarials.py --attack fgsm --detector InputMFS
 ```
+
+## Other repositories used
+For training the VGG-16 on CIFAR-10 we used:
+https://github.com/kuangliu/pytorch-cifar
+For generating the adversarial examples we used the toolbox foolbox:
+https://github.com/bethgelab/foolbox
+For the LID detector we used:
+https://github.com/xingjunm/lid_adversarial_subspace_detection
+For the Mahalanobis detector we used:
+https://github.com/pokaxpoka/deep_Mahalanobis_detector
+
