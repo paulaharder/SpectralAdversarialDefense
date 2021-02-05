@@ -8,7 +8,8 @@ from torch.autograd import Variable
 from scipy.spatial.distance import cdist
 from tqdm import tqdm
 from collections import OrderedDict
-from models.vgg import VGG
+from models.vgg_cif10 import VGG
+from models.vgg import vgg16_bn
 import argparse
 import sklearn
 import sklearn.covariance
@@ -27,19 +28,25 @@ net = args.net
 
 #load adversarials and their non-adversarial counterpart
 print('Loading images and adversarial examples...')
-images = torch.load('./data/adversarials/'+net+'_images_'+attack_method)
-images_advs = torch.load('./data/adversarials/'+net+'_images_adv_'+attack_method)
+images = torch.load('./data/'+net+'_adversarial_images/'+net+'_images_'+attack_method)
+images_advs = torch.load('./data/'+net+'_adversarial_images/'+net+'_images_adv_'+attack_method)
 number_images = len(images)
 
 #load model vgg16
 print('Loading model...')
-model = VGG('VGG16')
-checkpoint = torch.load('./models/checkpoint_vgg/ckpt.pth')
-new_state_dict = OrderedDict()
-for k, v in checkpoint['net'].items():
-    name = k[7:] # remove `module.`
-    new_state_dict[name] = v
-model.load_state_dict(new_state_dict)
+if net == 'cif10':
+    model = VGG('VGG16')
+    checkpoint = torch.load('./models/vgg_cif10.pth')
+    new_state_dict = OrderedDict()
+    for k, v in checkpoint['net'].items():
+        name = k[7:] # remove `module.`
+        new_state_dict[name] = v
+    model.load_state_dict(new_state_dict)
+elif net == 'cif100':
+    model = vgg16_bn()
+    model.load_state_dict(torch.load('./models/vgg_cif100.pth'))
+else:
+    print('unknown model')
 model = model.eval()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
@@ -57,14 +64,20 @@ def get_layer_feature_maps(X, layers):
 
 #normalizatio
 def cifar_normalize(images):
-    images[:,0,:,:] = (images[:,0,:,:] - 0.4914)/0.2023
-    images[:,1,:,:] = (images[:,1,:,:] - 0.4822)/0.1994
-    images[:,2,:,:] = (images[:,2,:,:] - 0.4465)/0.2010
+    if net == 'cif10':
+        images[:,0,:,:] = (images[:,0,:,:] - 0.4914)/0.2023
+        images[:,1,:,:] = (images[:,1,:,:] - 0.4822)/0.1994
+        images[:,2,:,:] = (images[:,2,:,:] - 0.4465)/0.2010
+    elif net == 'cif100':
+        images[:,0,:,:] = (images[:,0,:,:] - 0.5071)/0.2675
+        images[:,1,:,:] = (images[:,1,:,:] - 0.4867)/0.2565
+        images[:,2,:,:] = (images[:,2,:,:] - 0.4408)/0.2761
     return images
 
 #indice of activation layers
 act_layers= [2,5,9,12,16,19,22,26,29,32,36,39,42]
 fourier_act_layers = [9,16,22,29,36,42]
+
 
 ################Sections for each different detector
 
@@ -78,14 +91,17 @@ def calculate_fourier_spectrum(im, typ='MFS'):
     if typ == 'MFS':
         fourier_spectrum = np.abs(fft)
     elif typ == 'PFS':
-        fourier_spectrum = np.angle(fft)
+        fourier_spectrum = np.abs(np.angle(fft))
+    if net == 'cif100' and (attack_method=='cw' or attack_method=='df'):
+        fourier_spectrum *= 1/np.max(fourier_spectrum)
     return fourier_spectrum
+
 
 def calculate_spectra(images, typ='MFS'):
     fs = []   
     for i in range(len(images)):
         image = images[i]
-        fourier_image = calculate_fourier_spectrum(image, typ)
+        fourier_image = calculate_fourier_spectrum(image, typ=typ)
         fs.append(fourier_image.flatten())
     return fs
     
@@ -112,14 +128,17 @@ elif detector == 'LayerMFS':
     
     mfs = []
     mfs_advs = []
-    
+    if net == 'cif100' and (attack_method=='cw' or attack_method=='df'):
+        layers = [42]
+    else:
+        layers = fourier_act_layers
     for i in tqdm(range(number_images)):
         image = images[i].unsqueeze_(0)
         adv = images_advs[i].unsqueeze_(0)
         image = cifar_normalize(image)
         adv = cifar_normalize(adv)
-        image_feature_maps = get_layer_feature_maps(image, fourier_act_layers) 
-        adv_feature_maps = get_layer_feature_maps(adv, fourier_act_layers) 
+        image_feature_maps = get_layer_feature_maps(image, layers) 
+        adv_feature_maps = get_layer_feature_maps(adv, layers) 
         fourier_maps = calculate_spectra(image_feature_maps)
         fourier_maps_adv = calculate_spectra(adv_feature_maps)
         mfs.append(np.hstack(fourier_maps))
@@ -132,17 +151,20 @@ elif detector == 'LayerPFS':
 
     pfs = []
     pfs_advs = []
-    
+    if net == 'cif100' and (attack_method=='cw' or attack_method=='df'):
+        layers = [42]
+    else:
+        layers = fourier_act_layers
     for i in tqdm(range(number_images)):
         image = images[i].unsqueeze_(0)
         adv = images_advs[i].unsqueeze_(0)
         image = cifar_normalize(image)
         adv = cifar_normalize(adv)
-        image_feature_maps = get_layer_feature_maps(image, fourier_act_layers) 
-        adv_feature_maps = get_layer_feature_maps(adv, fourier_act_layers) 
+        image_feature_maps = get_layer_feature_maps(image, layers) 
+        adv_feature_maps = get_layer_feature_maps(adv, layers) 
         fourier_maps = calculate_spectra(image_feature_maps, typ='PFS')
         fourier_maps_adv = calculate_spectra(adv_feature_maps, typ='PFS')
-        pfs.append(np.hstack(fourier_maps),)
+        pfs.append(np.hstack(fourier_maps))
         pfs_advs.append(np.hstack(fourier_maps_adv))
         
     characteristics       = np.asarray(pfs, dtype=np.float32)
@@ -153,7 +175,10 @@ elif detector == 'LID':
 
     #hyperparameters
     batch_size = 100
-    k = 20
+    if net == 'cif10':
+        k = 20
+    else:
+        k = 10
     
     def mle_batch(data, batch, k):
         data = np.asarray(data, dtype=np.float32)
@@ -211,16 +236,23 @@ elif detector == 'Mahalanobis':
     if not is_sample_mean_calculated:
         print('Calculate sample mean and precision for Mahalanobis...')
         #load cifar10 training data
-        transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),])
-        trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=100, shuffle=True, num_workers=2)
+        if net == 'cif10':
+            transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),])
+            trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+            trainloader = torch.utils.data.DataLoader(trainset, batch_size=100, shuffle=True, num_workers=2)
+            num_classes = 10
+        elif net == 'cif100':
+            transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)),])
+            trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform)
+            trainloader = torch.utils.data.DataLoader(trainset, batch_size=100, shuffle=True, num_workers=2)
+            num_classes = 100
 
         data_iter = iter(trainloader)
         im = data_iter.next()
         feature_list=[]
         layers = get_layer_feature_maps(im[0].cuda(), act_layers)
         m = len(act_layers)
-        num_classes = 10
+        
         for i in tqdm(range(m)):
             layer = layers[i]
             n_channels=layer.shape[1]
@@ -282,21 +314,30 @@ elif detector == 'Mahalanobis':
             temp_precision = group_lasso.precision_
             temp_precision = torch.from_numpy(temp_precision).float().cuda()
             precision.append(temp_precision)
-        np.save('./data/sample_mean',sample_class_mean)
-        np.save('./data/precision',precision)
+        np.save('./data/sample_mean_'+net,sample_class_mean)
+        np.save('./data/precision_'+net,precision)
         
     #load sample mean and precision
     print('Loading sample mean and precision...')
-    sample_mean = np.load('./data/sample_mean.npy',allow_pickle=True)
-    precision =  np.load('./data/precision.npy',allow_pickle=True)    
+    sample_mean = np.load('./data/sample_mean_'+net+'.npy',allow_pickle=True)
+    precision =  np.load('./data/precision_'+net+'.npy',allow_pickle=True)    
     
-    num_classes = 10
-    if attack_method == 'fgsm':
-        magnitude = 0.0002
-    elif attack_method == 'cw':
-        magnizude = 0.00001
+    if net == 'cif10':
+        if attack_method == 'fgsm':
+            magnitude = 0.0002
+        elif attack_method == 'cw':
+            magnitude = 0.00001
+        else:
+            magnitude = 0.00005
     else:
-        magnitude = 0.00005
+        if attack_method == 'fgsm':
+            magnitude = 0.005
+        elif attack_method == 'cw':
+            magnitude = 0.00001
+        elif attack_method == 'df':
+            magnitude = 0.0005
+        else:
+            magnitude = 0.01
 
     image_loader = torch.utils.data.DataLoader(images, batch_size=100, shuffle=True)
     adv_loader = torch.utils.data.DataLoader(images_advs, batch_size=100, shuffle=True)
