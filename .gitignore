@@ -1,10 +1,14 @@
 data/adversarials/
 data/cif100_adversarial_images/*
+!data/cif100_adversarial_images/.gitkeep
 data/cif10_adversarial_images/*
+!data/cif10_adversarial_images/.gitkeep
 data/cifar-100-python
 data/detectors/*
+!data/detectors/.gitkeep
 data/cifar-100-python.tar.gz
 data/characteristics/*
+!data/characteristics/.gitkeep
 data/cifar-10-batches-py
 data/cifar-10-python.tar.gz
 data/cleat_data_cif
