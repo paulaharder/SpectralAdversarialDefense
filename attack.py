@@ -5,7 +5,7 @@ from foolbox.attacks import  L2DeepFoolAttack, LinfBasicIterativeAttack, FGSM, L
 import torch
 from tqdm import tqdm
 from collections import OrderedDict
-from models.vgg import VGG
+from models.vgg_cif10 import VGG
 from models.vgg import vgg16_bn
 import argparse
 

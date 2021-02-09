@@ -5,8 +5,10 @@
 
 Clone the repository and install the requirements
 ```sh
-$ cd SpectralAdversarialDetection
-$ pip install -r requirements.txt
+$ git clone https://github.com/paulaharder/SpectralAdversarialDefense.git
+$ cd SpectralAdversarialDefense
+$ conda env create -f requirements.yml
+$ conda activate spectral_defense
 ```
 
 There are two possiblities: Either use our data set with existing adversarial examples, in this case follow the instructions under 'Download' or generate the examples by yourself, by going threw 'Data generation'. For both possibilities conclude with 'Build a detector'.
@@ -14,22 +16,23 @@ There are two possiblities: Either use our data set with existing adversarial ex
 ### Download
 
 Download the adversarial examples and their non-adversarial counterparts from:
-https://cutt.ly/0jmLTm0 . Extract the folders in /data. Go to 'Build detector'.
+https://cutt.ly/0jmLTm0 . Extract the folders into /data. Go to 'Build detector'.
 
 ### Data generation
 
-Train the VGG16 on CIFAR-10/100:
+Train the VGG16 on CIFAR-10:
 ```sh
 $ python train_cif10.py
 ```
 
+or on CIFAR-100
 ```sh
 $ python train_cif100.py
 ```
 
-Copy the pth-file in /models/vgg_cif10.py or /models/vgg_cif100.py.
+Copy the pth-files from the checkpoint directory to /models/vgg_cif10.pth or /models/vgg_cif100.pth.
 
-Download the CIFAR-10/100 dataset and extract the CIFAR10/100 images, which are correctly classified by the network by running
+The following skript will download the CIFAR-10/100 dataset and extract the CIFAR10/100 images, which are correctly classified by the network by running. Use --net cif10 for CIFAR-10 and --net cif100 for CIFAR-100
 ```sh
 $ python generate_clean_data.py --net cif10
 ```
@@ -48,7 +51,7 @@ $ python extract_characteristics.py --attack fgsm --detector InputMFS
 ```
 
 
-Then train a LR classifier on the characteristics for a specific attack and characteristic:
+Then train a classifier on the characteristics for a specific attack and characteristic:
 ```sh
 $ python detect_adversarials.py --attack fgsm --detector InputMFS
 ```
