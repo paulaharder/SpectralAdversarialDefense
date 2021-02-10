@@ -15,8 +15,40 @@ There are two possiblities: Either use our data set with existing adversarial ex
 
 ### Download
 
-Download the adversarial examples and their non-adversarial counterparts from:
-https://cutt.ly/0jmLTm0 . Extract the folders into /data. Go to 'Build detector'.
+Download the adversarial examples and their non-adversarial counterparts as well as the trained VGG-16 networks from:
+https://cutt.ly/0jmLTm0 . Extract the folders for the adversarial examples into /data and the models in the main directory. Afterwards continue with 'Build detector'.
+
+#### Data download
+
+To get the data directly on your server use wget. For the adversarial examples based on CIFAR-10 use:
+```sh
+$ wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1rfSSXNKcquD03lLBXd8IskoZAmDyjzPL' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1rfSSXNKcquD03lLBXd8IskoZAmDyjzPL" -O cif10_adversarial_images.zip && rm -rf /tmp/cookies.txt
+```
+
+then unzip
+```sh
+$ unzip -o cif10_adversarial_images.zip -d data/
+$ rm cif10_adversarial_images.zip 
+```
+
+For adversarial examples based on CIFAR-100 use:
+```sh
+$ wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1NeWUvU63F04aO8k285PJNnfrB21RoI91' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1NeWUvU63F04aO8k285PJNnfrB21RoI91" -O cif100_adversarial_images.zip && rm -rf /tmp/cookies.txt
+```
+
+#### Model download
+
+To get the weights for the VGG-16 netwroks for CIFAR-10 and CIFAR-100 run:
+
+```sh
+$ wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1b4vyiNIghGV9nwMnMki5mpC6kujLHP11' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1b4vyiNIghGV9nwMnMki5mpC6kujLHP11" -O models.zip && rm -rf /tmp/cookies.txt
+```
+
+then unzip
+```sh
+$ unzip -o models.zip -d .
+$ rm models.zip 
+```
 
 ### Data generation
 
