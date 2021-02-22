@@ -56,7 +56,7 @@ elif attack_method == 'pgd':
 elif attack_method == 'df':
     attack = L2DeepFoolAttack()
     epsilons = None
-elif attack_method == 'df':
+elif attack_method == 'cw':
     attack = L2CarliniWagnerAttack(steps=1000)
     epsilons = None
 else:
