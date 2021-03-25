@@ -79,7 +79,7 @@ for images, labels in testloader_normalized:
     if (predicted == labels):
         clean_dataset.append(data)
     i +=1
-print('Accuracy of the network on the 1000 test images: %d %%' % (
+print('Accuracy of the network on the test images: %d %%' % (
     100 * correct / total))
 
 torch.save(clean_dataset, './data/clean_data_'+net)
