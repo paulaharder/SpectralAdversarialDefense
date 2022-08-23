@@ -1,6 +1,18 @@
 # SpectralAdversarialDefense
 
-This code belongs to the paper: https://arxiv.org/abs/2103.03000.
+This code belongs to the paper: https://ieeexplore.ieee.org/document/9533442. If you use this repo, please cite:
+
+```sh
+@INPROCEEDINGS{9533442,
+  author={Harder, Paula and Pfreundt, Franz-Josef and Keuper, Margret and Keuper, Janis},
+  booktitle={2021 International Joint Conference on Neural Networks (IJCNN)}, 
+  title={SpectralDefense: Detecting Adversarial Attacks on CNNs in the Fourier Domain}, 
+  year={2021},
+  volume={},
+  number={},
+  pages={1-8},
+  doi={10.1109/IJCNN52387.2021.9533442}}
+  ```
 
 ## How to run the code
 
